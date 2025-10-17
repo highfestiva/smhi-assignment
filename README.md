@@ -53,3 +53,18 @@ ChatGPT told me there's a package called MapStruct, that can do automatic bean m
 ## Deliberately skipping
 
 HTTPS/certs. Deploy. CI/CD. Redundancy, resilience, reverse proxy, load balancing. Optimization. Caching.
+
+## Steps taken
+
+1. Generated a basic spring boot project.
+1. Found schema files on the [SMHI site](https://opendata.smhi.se/metobs/schemas), which I downloaded and put in the resources/xsd directory.
+1. Incorporated JAXB to generate the schema code.
+1. Added a downloader service.
+1. Added a startup component which does the download. That way it's always obvious if everything works, and there's always recent data in the DB.
+1. Added a data pipeline service, "Metrology Ingest", to download, transform and store the data.
+
+## Instructions for manual start+test
+
+1. `docker-compose up --build`
+1. `curl http://127.0.0.1/v1/status`
+1. `curl http://127.0.0.1/v1/something`

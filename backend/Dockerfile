@@ -5,7 +5,8 @@ FROM maven:3.9.11-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
 # Copy maven build files and install dependencies
-COPY pom.xml .
+COPY pom.xml mvnw* .
+COPY .mvn .mvn
 RUN mvn dependency:go-offline
 
 # Copy source and build
