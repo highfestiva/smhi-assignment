@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.pixeldoctrine.smhi_assignment.repository.DataRepository;
+import com.pixeldoctrine.smhi_assignment.repository.StationMeasurementRepositoryCustom;
 
 import jakarta.xml.bind.JAXBException;
 
@@ -19,11 +19,11 @@ public class MetrologyIngestService {
 
     private final SmhiDownloadService downloader;
     private final TransformService transformer;
-    private final DataRepository repo;
+    private final StationMeasurementRepositoryCustom repo;
 
     public MetrologyIngestService(SmhiDownloadService downloader,
             TransformService transformer,
-            DataRepository repo) {
+            StationMeasurementRepositoryCustom repo) {
         this.downloader = downloader;
         this.transformer = transformer;
         this.repo = repo;
@@ -33,10 +33,15 @@ public class MetrologyIngestService {
     public void ingest() {
         log.info("Starting the data pipeline");
         try {
-            var raw = downloader.download();
-            var processed = transformer.transform(raw);
-            if (processed != null) {
-                repo.save(processed);
+            var data = downloader.download();
+            var stationsData = transformer.transform(data);
+            if (stationsData != null) {
+                var result = repo.saveAllStations(stationsData);
+                if (result.getModifiedCount() != stationsData.size()) {
+                    log.error("Was not able to save all stations' data, only {}/{}",
+                            result.getModifiedCount(),
+                            stationsData.size());
+                }
             }
         } catch (JAXBException e) {
             log.error("Error parsing SMHI's XML", e);

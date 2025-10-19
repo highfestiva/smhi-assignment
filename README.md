@@ -54,6 +54,74 @@ ChatGPT told me there's a package called MapStruct, that can do automatic bean m
 
 HTTPS/certs. Deploy. CI/CD. Redundancy, resilience, reverse proxy, load balancing. Optimization. Caching.
 
+## Data investigation
+
+So I looked at the data from SMHI, I'll use XML & the schema to load data using discoverability. The contents is fairly straight-forward and looks something liket his:
+
+```
+                                       +-- Station A data
+              +-- parameter "Byvind" --+-- Station B data
+              |                        +-- ...         +-- Station A data
+version 1.0 --+-- parameter "Luftemperatur" -----------+-- Station C data
+              |                                        +-- ...
+              +-- ...
+
+```
+
+There are many different air temperature parameters, such as 1 month average and the minimum value over 24 hours. I'll ingest all air temperature values with a period
+24h or shorter, as the assignment doesn't say exactly what's desired.
+
+As to the output data, the assignment specifically says it's either asking for the last hour or the last day, so I'll return all the relevant values for 1h or 24h. I'm
+going to keep all station data within a single document. It would be easy to split into 1h and 24h documents for scalability, but the data set is small, and there are
+so few documents that even if it expanded several orders of magnitude, we'd be fine.
+
+The pros and cons of this method: post-load filtering and scalability are drawbacks. An advantage is the same download and store routine for all the data, instead of
+splitting it (1h/24h) either on the download or the storage. The code complexity of both are similar, it really makes no difference either way in _this_ scenario.
+
+I'll keep some of the original data, which might be helpful. This is what I'm thinking currently:
+
+```json
+[
+  {
+    "station": "Arvidsjaur A",
+    "stationId": "159880",
+    "measurements": [
+      {
+        "type": "airTemp",
+        "interval": "1h",
+        "value": "4.3",
+        "unit": "°C",
+        "quality": "G",
+        "updatedAt": "2025-10-18T19:00:00Z",
+        "originalDescription": "Lufttemperatur, momentanvärde, 1 gång/tim"
+      },
+      {
+        "type": "gustWind",
+        "interval": "1h",
+        "value": "7.2",
+        "unit": "m/s",
+        "quality": "G",
+        "updatedAt": "2025-10-18T18:00:00Z",
+        "originalDescription": "Byvind, max, 1 gång/tim"
+      }
+    ]
+  },
+  ...
+]
+```
+
+Here the advantage of using a NOSQL db starts to show, because the fields don't have to be fixed, and if new ones are added in the future version, it can be returned as
+stored.
+
+The "type", which should be international in a good API, has to be "translated" somehow. I'm adding a tiny class for it, with a lookup table. Even if the number of
+parameters would be in the 100s in the future, it's not a big deal. Using some i18n package is not a good idea, as you want it to be machine readable in the future too.
+The same goes for "unit."
+
+## Design decisions along the way
+
+I decided to use the same DTO for the database, for returning to the customer and in calls between the layers. It's a pragmatic approach, which saves conversion
+boilerplate. It doesn't really do any harm, as what I'm saving is what I want to present to the HTTP caller.
+
 ## Steps taken
 
 1. Generated a basic spring boot project.
@@ -62,6 +130,8 @@ HTTPS/certs. Deploy. CI/CD. Redundancy, resilience, reverse proxy, load balancin
 1. Added a downloader service.
 1. Added a startup component which does the download. That way it's always obvious if everything works, and there's always recent data in the DB.
 1. Added a data pipeline service, "Metrology Ingest", to download, transform and store the data.
+1. Thought some about the data (see "Data investigation" above).
+1. Implemented a bulk save repository to efficiently store the "station measurements."
 
 ## Instructions for manual start+test
 

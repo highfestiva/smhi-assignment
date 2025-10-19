@@ -1,8 +1,11 @@
 package com.pixeldoctrine.smhi_assignment.service;
 
+import java.util.Collection;
+
 import org.springframework.stereotype.Service;
 
-import com.pixeldoctrine.smhi_assignment.dto.ProcessedData;
+import com.pixeldoctrine.smhi_assignment.dto.ParameterStationDataDTO;
+import com.pixeldoctrine.smhi_assignment.dto.StationMeasurementsDTO;
 
 /**
  * Uses MapStruct to transform the data into something we can use.
@@ -10,7 +13,7 @@ import com.pixeldoctrine.smhi_assignment.dto.ProcessedData;
 @Service
 public class TransformService {
     
-    public ProcessedData transform(Object data) {
+    public Collection<StationMeasurementsDTO> transform(Collection<ParameterStationDataDTO> data) {
         return null;
     }
 }
