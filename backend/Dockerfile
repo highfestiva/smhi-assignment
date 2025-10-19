@@ -5,13 +5,12 @@ FROM maven:3.9.11-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
 # Copy maven build files and install dependencies
-COPY pom.xml mvnw* .
-COPY .mvn .mvn
+COPY pom.xml .
 RUN mvn dependency:go-offline
 
 # Copy source and build
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn clean package spring-boot:repackage -DskipTests
 
 # The runtime image
 FROM eclipse-temurin:21-jre
@@ -22,4 +21,4 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 
 # Run app
-ENTRYPOINT ["java","-jar","app.jar"]
+CMD ["java","-jar","app.jar"]

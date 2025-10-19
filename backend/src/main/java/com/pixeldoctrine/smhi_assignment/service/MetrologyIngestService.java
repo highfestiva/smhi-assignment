@@ -37,9 +37,10 @@ public class MetrologyIngestService {
             var stationsData = transformer.transform(data);
             if (stationsData != null) {
                 var result = repo.saveAllStations(stationsData);
-                if (result.getModifiedCount() != stationsData.size()) {
+                var upsertCount = result.getInsertedCount() + result.getModifiedCount();
+                if (upsertCount != stationsData.size()) {
                     log.error("Was not able to save all stations' data, only {}/{}",
-                            result.getModifiedCount(),
+                            upsertCount,
                             stationsData.size());
                 }
             }

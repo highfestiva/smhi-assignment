@@ -9,5 +9,4 @@ public class SmhiAssignmentApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SmhiAssignmentApplication.class, args);
 	}
-
 }
