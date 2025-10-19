@@ -16,9 +16,10 @@ import org.springframework.web.client.RestTemplate;
 import com.pixeldoctrine.smhi.Category;
 import com.pixeldoctrine.smhi.LinkType;
 import com.pixeldoctrine.smhi.MetObsParameter;
-import com.pixeldoctrine.smhi.MetObsStationSetDataType;
+import com.pixeldoctrine.smhi.MetObsPeriod;
+import com.pixeldoctrine.smhi.MetObsSampleData;
+import com.pixeldoctrine.smhi.MetObsStation;
 import com.pixeldoctrine.smhi.Version;
-import com.pixeldoctrine.smhi_assignment.dto.ParameterStationDataDTO;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -32,6 +33,9 @@ public class SmhiDownloadService {
 
     private static final Logger log = LoggerFactory.getLogger(SmhiDownloadService.class);
 
+    private static String LATEST_DAY = "latest-day";
+    private static String LATEST_HOUR = "latest-hour";
+
     @Value("${smhi.download.root_url}")
     private String rootUrl;
 
@@ -41,9 +45,12 @@ public class SmhiDownloadService {
     @Value("${smhi.api_properties}")
     private Set<String> apiProperties;
 
+    @Value("${smhi.period}")
+    private Set<String> periods;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public Collection<ParameterStationDataDTO> download() throws JAXBException {
+    public Collection<MetObsSampleData> download() throws JAXBException {
         log.info("Starting SMHI data download from {}", rootUrl);
 
         var root = read(rootUrl, Category.class);
@@ -60,27 +67,55 @@ public class SmhiDownloadService {
                 .filter(resource -> apiProperties.contains(resource.getKey()))
                 .toList();
 
-        List<ParameterStationDataDTO> params = new ArrayList<>();
+        List<MetObsSampleData> params = new ArrayList<>();
         for (var resource : resources) {
             String parameterUrl = getXmlUrl(resource.getLink());
 
             var parameter = read(parameterUrl, MetObsParameter.class);
 
-            // use parallelization for many HTTP queries
-            var stationDataList = parameter.getStation().parallelStream()
-                    .filter(station -> station.isActive())
-                    .map(station -> getXmlUrl(station.getLink()))
-                    .map(stationUrl -> readOptional(stationUrl, MetObsStationSetDataType.class))
-                    .filter(readResult -> readResult.isPresent())
-                    .map(readResult -> readResult.get())
-                    .toList();
+            var stationDataList = downloadStationsData(parameter);
 
-            params.add(new ParameterStationDataDTO(parameter, stationDataList));
+            params.addAll(stationDataList);
         }
 
         log.info("Finished SMHI data download");
 
         return params;
+    }
+
+    /**
+     * Go through all active stations, and download their data
+     * @param parameter A specific parameter, such as "21"="Byvind".
+     * @return The list of all the relevant sample data ("latest-day" and "latest-hour")
+     */
+    private Collection<MetObsSampleData> downloadStationsData(MetObsParameter parameter) {
+        // use parallelization to speed up many HTTP queries
+        return parameter.getStation().parallelStream()
+                .filter(station -> station.isActive())
+                .map(station -> getXmlUrl(station.getLink()))
+                .map(stationUrl -> readOptional(stationUrl, MetObsStation.class))
+                .filter(stationResult -> stationResult.isPresent())
+                .map(stationResult -> stationResult.get())
+                .map(stationResult -> downloadStationData(stationResult))
+                .flatMap(stationData -> stationData.stream())
+                .toList();
+    }
+
+    /**
+     * Download the latest-day and latest-hour data for the given station.
+     */
+    private Collection<MetObsSampleData> downloadStationData(MetObsStation station) {
+        return station.getPeriod().stream()
+                .filter(period -> periods.contains(period.getKey()))
+                .map(period -> getXmlUrl(period.getLink()))
+                .map(periodUrl -> readOptional(periodUrl, MetObsPeriod.class))
+                .filter(periodResult -> periodResult.isPresent())
+                .map(periodResult -> periodResult.get())
+                .map(periodResult -> getXmlUrl(periodResult.getData().get(0).getLink()))
+                .map(dataUrl -> readOptional(dataUrl, MetObsSampleData.class))
+                .filter(dataResult -> dataResult.isPresent())
+                .map(dataResult -> dataResult.get())
+                .toList();
     }
 
     private <T> Optional<T> readOptional(String url, Class<T> clazz) {
@@ -102,7 +137,7 @@ public class SmhiDownloadService {
         return data;
     }
 
-    private String getXmlUrl(List<LinkType> links) {
+    private String getXmlUrl(Collection<LinkType> links) {
         return links.stream()
                 .filter(this::isXmlLink)
                 .map(link -> link.getHref())

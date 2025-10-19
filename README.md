@@ -59,24 +59,33 @@ HTTPS/certs. Deploy. CI/CD. Redundancy, resilience, reverse proxy, load balancin
 So I looked at the data from SMHI, I'll use XML & the schema to load data using discoverability. The contents is fairly straight-forward and looks something liket his:
 
 ```
-                                       +-- Station A data
-              +-- parameter "Byvind" --+-- Station B data
-              |                        +-- ...         +-- Station A data
-version 1.0 --+-- parameter "Luftemperatur" -----------+-- Station C data
+                                                       +-- latest-day  --- data
+                                       +-- Station A --+-- latest-hour --- data
+                                       |               +-- ...
+                                       |
+                                       |               +-- latest-day  --- data
+              +-- parameter "Byvind" --+-- Station B --+-- latest-hour --- data
+              |                        |               +-- ...
+              |                        +-- ...
+              |                                                        +-- latest-day  --- data
+              |                                        +-- Station A --+-- latest-hour --- data
+              |                                        |               +-- ...
+              |                                        |
+version 1.0 --+-- parameter "Luftemperatur" -----------+-- Station C -- ...
               |                                        +-- ...
               +-- ...
 
 ```
 
 There are many different air temperature parameters, such as 1 month average and the minimum value over 24 hours. I'll ingest all air temperature values with a period
-24h or shorter, as the assignment doesn't say exactly what's desired.
+1d or shorter, as the assignment doesn't say exactly what's desired.
 
-As to the output data, the assignment specifically says it's either asking for the last hour or the last day, so I'll return all the relevant values for 1h or 24h. I'm
-going to keep all station data within a single document. It would be easy to split into 1h and 24h documents for scalability, but the data set is small, and there are
+As to the output data, the assignment specifically says it's either asking for the last hour or the last day, so I'll return all the relevant values for 1h or 1d. I'm
+going to keep all station data within a single document. It would be easy to split into 1h and 1d documents for scalability, but the data set is small, and there are
 so few documents that even if it expanded several orders of magnitude, we'd be fine.
 
 The pros and cons of this method: post-load filtering and scalability are drawbacks. An advantage is the same download and store routine for all the data, instead of
-splitting it (1h/24h) either on the download or the storage. The code complexity of both are similar, it really makes no difference either way in _this_ scenario.
+splitting it (1h/1d) either on the download or the storage. The code complexity of both are similar, it really makes no difference either way in _this_ scenario.
 
 I'll keep some of the original data, which might be helpful. This is what I'm thinking currently:
 
@@ -93,7 +102,7 @@ I'll keep some of the original data, which might be helpful. This is what I'm th
         "unit": "°C",
         "quality": "G",
         "updatedAt": "2025-10-18T19:00:00Z",
-        "originalDescription": "Lufttemperatur, momentanvärde, 1 gång/tim"
+        "originalDescription": ["Lufttemperatur", "momentanvärde, 1 gång/tim"]
       },
       {
         "type": "gustWind",
@@ -102,7 +111,7 @@ I'll keep some of the original data, which might be helpful. This is what I'm th
         "unit": "m/s",
         "quality": "G",
         "updatedAt": "2025-10-18T18:00:00Z",
-        "originalDescription": "Byvind, max, 1 gång/tim"
+        "originalDescription": ["Byvind", "max, 1 gång/tim"]
       }
     ]
   },
@@ -132,6 +141,8 @@ boilerplate. It doesn't really do any harm, as what I'm saving is what I want to
 1. Added a data pipeline service, "Metrology Ingest", to download, transform and store the data.
 1. Thought some about the data (see "Data investigation" above).
 1. Implemented a bulk save repository to efficiently store the "station measurements."
+1. Implemented a test for the transform service.
+1. Implemented part of the transform service. Decided to scrap the MapStruct idea, as it became clunkier than just straightforward java.
 
 ## Instructions for manual start+test
 

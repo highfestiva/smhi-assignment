@@ -9,6 +9,4 @@ import com.pixeldoctrine.smhi_assignment.dto.StationMeasurementsDTO;
 public interface StationMeasurementRepository extends MongoRepository<StationMeasurementsDTO, String> {
 
     Collection<StationMeasurementsDTO> findByStationId(String stationId);
-
-    void saveAllStations(Collection<StationMeasurementsDTO> stationMeasurements);
 }
