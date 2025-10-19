@@ -141,8 +141,10 @@ boilerplate. It doesn't really do any harm, as what I'm saving is what I want to
 1. Added a data pipeline service, "Metrology Ingest", to download, transform and store the data.
 1. Thought some about the data (see "Data investigation" above).
 1. Implemented a bulk save repository to efficiently store the "station measurements."
-1. Implemented a test for the transform service.
+1. Implemented a test for the transform service (a single sample).
 1. Implemented part of the transform service. Decided to scrap the MapStruct idea, as it became clunkier than just straightforward java.
+1. Implemented a test for the full transform (a station containing multiple samples).
+1. Implemented the complete transform service.
 
 ## Instructions for manual start+test
 

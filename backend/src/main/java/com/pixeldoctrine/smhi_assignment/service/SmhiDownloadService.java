@@ -33,9 +33,6 @@ public class SmhiDownloadService {
 
     private static final Logger log = LoggerFactory.getLogger(SmhiDownloadService.class);
 
-    private static String LATEST_DAY = "latest-day";
-    private static String LATEST_HOUR = "latest-hour";
-
     @Value("${smhi.download.root_url}")
     private String rootUrl;
 

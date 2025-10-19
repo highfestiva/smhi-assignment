@@ -1,6 +1,8 @@
 package com.pixeldoctrine.smhi_assignment.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,21 +26,40 @@ public class TransformService {
     private static Map<String, String> PERIOD_KEY_TO_INTERVAL = Map.of("latest-day", "1d", "latest-hour", "1h");
     private static Map<String, String> UNIT_TO_UNIT = Map.of("meter per sekund", "m/s", "celsius", "°C");
 
-    public Collection<StationMeasurementsDTO> transform(Collection<MetObsSampleData> data) {
-        return null;
+    public List<StationMeasurementsDTO> transform(Collection<MetObsSampleData> data) {
+
+        Map<String, StationMeasurementsDTO> stationIdToMeasurement = new HashMap<>();
+        for (var sample : data) {
+            var measurement = transformToMeasurement(sample);
+            var stationId = sample.getStation().getKey();
+            var stationMeasurements = stationIdToMeasurement.get(stationId);
+            if (stationMeasurements == null) {
+                var measurementList = new ArrayList<MeasurementDTO>();
+                stationMeasurements = new StationMeasurementsDTO(
+                    null,
+                    sample.getStation().getName(),
+                    stationId,
+                    measurementList);
+                stationIdToMeasurement.put(stationId, stationMeasurements);
+            }
+            stationMeasurements.measurements().add(measurement);
+        }
+
+        var stationList = new ArrayList<>(stationIdToMeasurement.values());
+        return stationList;
     }
 
     public MeasurementDTO transformToMeasurement(MetObsSampleData sampleData) {
+
         var recentValue = getMostRecentValue(sampleData.getValue());
         return new MeasurementDTO(
-            PARAM_NAME_TO_TYPE.get(sampleData.getParameter().getName()),
-            PERIOD_KEY_TO_INTERVAL.get(sampleData.getPeriod().getKey()),
-            recentValue.getValue(),
-            UNIT_TO_UNIT.get(sampleData.getParameter().getUnit()),
-            recentValue.getQuality(),
-            recentValue.getDate().toGregorianCalendar().toZonedDateTime().toInstant(),
-            List.of(sampleData.getParameter().getName(), sampleData.getParameter().getSummary())
-        );
+                PARAM_NAME_TO_TYPE.get(sampleData.getParameter().getName()),
+                PERIOD_KEY_TO_INTERVAL.get(sampleData.getPeriod().getKey()),
+                recentValue.getValue(),
+                UNIT_TO_UNIT.get(sampleData.getParameter().getUnit()),
+                recentValue.getQuality(),
+                recentValue.getDate().toGregorianCalendar().toZonedDateTime().toInstant(),
+                List.of(sampleData.getParameter().getName(), sampleData.getParameter().getSummary()));
     }
 
     private MetObsSampleValueType getMostRecentValue(List<MetObsSampleValueType> values) {
