@@ -49,6 +49,13 @@
 			<artifactId>jaxb-runtime</artifactId>
 			<version>4.0.6</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.11.0</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -75,20 +82,6 @@
 					</sources>
 					<outputDirectory>${project.build.directory}/generated-sources/jaxb</outputDirectory>
 					<packageName>com.pixeldoctrine.smhi</packageName>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.14.1</version>
-				<configuration>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.mapstruct</groupId>
-							<artifactId>mapstruct-processor</artifactId>
-							<version>1.6.3</version>
-						</path>
-					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 		</plugins>
