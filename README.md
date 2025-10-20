@@ -5,7 +5,7 @@ In my words, this assignment is about checking that I can gather, restructure an
 This readme is intentionally disorganized, so to speak. I've tried to reflect my thinking by expanding on it from top to bottom, but had to "refactor"
 small things a couple of times. This will make it harder to read, but hopefully easier to see what I've been up to.
 
-## What to do
+## Instruction
 
 Design a backend solution using the SMHI open API
 
@@ -29,7 +29,7 @@ I pick Java Spring Boot, as that's what I'm most comfortable with. If left to my
 
 Data should be structured, but relatively unclear how exactly just yet, and also allow for ease of change in the future (in the spirit of the assignment), so I pick a document database. I like MongoDB, so I go with that.
 
-The API should return the latest data, so I'll perform downloads from SMHI regularly using Spring Boot's @Scheduled.
+The API should return the latest data, so I'll perform downloads from SMHI regularly using Spring Boot's `@Scheduled`.
 
 The API keys might as well reside in the database, I'll use Spring Security to verify.
 
@@ -145,14 +145,14 @@ boilerplate. It doesn't really do any harm, as what I'm saving is what I want to
 1. Thought some about the data (see "Data investigation" above).
 1. Implemented a bulk save repository to efficiently store the "station observations."
 1. Implemented a test for the transform service (a single sample).
-1. Implemented part of the transform service. Decided to scrap the MapStruct idea, as it became clunkier than just straightforward java.
+1. Implemented part of the transform service. Decided to scrap the MapStruct idea, as it became clunkier than just straightforward java (since I'm pivoting the data, and not just moving data between fields).
 1. Implemented a test for the full transform (a station containing multiple samples).
 1. Implemented the complete transform service.
 1. Got the first download+save going.
 1. Renamed "measurement" "observation," which is more in line with meterology.
 1. Added the REST API endpoint for observations.
 1. Added the observation interval filtering.
-1. Added the API key, had some trouble (IDE probably wasn't compiling right, worked after undoing and redoing all :).
+1. Added the API key, had some trouble (IDE wasn't compiling right, worked after undoing and redoing all :).
 1. Added an endpoint for just fetching stations.
 
 ## REST API
@@ -247,9 +247,12 @@ If we like it's super-easy to add more data to either stations or observations i
 * Endpoint query filter on observation types.
 * Meta-data endpoint for intervals.
 * Discoverability done right, and a root endpoint for it.
-* Issuing API keys.
+* Issuing API keys, add roles.
+* Error handling for SMHI download, retries too.
+* Replace "interval" in the API with to-from, perhaps make it look similar to a weather forecast API.
+* Have /api/v1/status show system status.
 * Cleaning up this readme. :)
-...
+* ...
 
 ### Code
 
@@ -260,8 +263,10 @@ If we like it's super-easy to add more data to either stations or observations i
 * Add some linter.
 * Logging unauthorized requests.
 * Adding performance instrumentation, for instance micrometer.io.
-* 
-...
+* Drop hardcoded transformations for additions in the future.
+* Use something other than regex for "permitted path" for performance reasons.
+* Add relevant tests.
+* ...
 
 ## Instructions for manual start+test
 
