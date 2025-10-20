@@ -15,7 +15,7 @@ import jakarta.xml.bind.JAXBException;
 @Service
 public class MetrologyIngestService {
 
-    private static Logger log = LoggerFactory.getLogger(MetrologyIngestService.class);
+    private static final Logger log = LoggerFactory.getLogger(MetrologyIngestService.class);
 
     private final SmhiDownloadService downloader;
     private final TransformService transformer;
