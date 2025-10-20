@@ -1,4 +1,4 @@
-package com.pixeldoctrine.smhi_assignment.repository;
+package com.pixeldoctrine.smhi_assignment.repository.station;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -27,8 +26,11 @@ public class StationObservationRepositoryCustomImpl implements StationObservatio
 
     private static String COLL_STATION_OBSERVATIONS = "station_observations";
 
-    @Autowired
     private MongoTemplate mongoTemplate;
+
+    public StationObservationRepositoryCustomImpl(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
 
     /**
      * We use bulk write for efficiency.

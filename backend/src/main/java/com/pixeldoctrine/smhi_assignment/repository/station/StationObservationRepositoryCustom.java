@@ -1,4 +1,4 @@
-package com.pixeldoctrine.smhi_assignment.repository;
+package com.pixeldoctrine.smhi_assignment.repository.station;
 
 import java.util.Collection;
 

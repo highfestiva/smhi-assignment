@@ -156,16 +156,16 @@ Time to think about what the REST API should look like. After utilizing the disc
 condensed data set, and that's also more in line with the assignment ("easy consumption"). I'm thinking something like this:
 
 ```
-GET /v1/observations?station=345&interval=1h
+GET /api/v1/observations?station=345&interval=1h
 ```
 
 For pagination, it might be good to also have `&page=0&size=25`. This allows for asking for a single station, or all - if no stations are set. The interval
-would support 1h and 1d, and also be optional and default to 1h. I'm skipping auxillary `/v1/observations/stations/{station_id}/interval/{}` and so forth.
+would support 1h and 1d, and also be optional and default to 1h. I'm skipping auxillary `/api/v1/observations/stations/{station_id}/interval/{}` and so forth.
 
 For meta-data we could do:
 
 ```
-GET /v1/stations?page=0&size=10
+GET /api/v1/stations?page=0&size=10
 ```
 
 It's also easy to think of listing time intervals, what types of observations there are, what units they use, and so forth. But for simple consumption, less is
@@ -258,6 +258,6 @@ If we like it's super-easy to add more data to either stations or observations i
 ## Instructions for manual start+test
 
 1. `docker-compose up --build`
-1. `curl http://127.0.0.1/v1/status`
-1. `curl 'http://127.0.0.1:8080/v1/observations?interval=1d&page=2&size=3' | python -m json.tool`
-1. `curl http://127.0.0.1/v1/stations | python -m json.tool`
+1. `curl -H "Authorization: Bearer ABCDH" http://127.0.0.1:8080/api/v1/status`
+1. `curl -H "Authorization: Bearer ABCDH" 'http://127.0.0.1:8080/api/v1/observations?interval=1d&page=2&size=3' | python -m json.tool`
+1. `curl -H "Authorization: Bearer ABCDH" http://127.0.0.1/api/v1/stations | python -m json.tool`

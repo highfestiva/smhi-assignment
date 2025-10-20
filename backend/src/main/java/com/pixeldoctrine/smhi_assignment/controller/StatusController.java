@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.pixeldoctrine.smhi_assignment.dto.StatusDTO;
 
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/api/v1")
 public class StatusController {
 
     @GetMapping("/status")

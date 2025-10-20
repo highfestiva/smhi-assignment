@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pixeldoctrine.smhi_assignment.dto.PaginationDTO;
 import com.pixeldoctrine.smhi_assignment.dto.StationsPageDTO;
-import com.pixeldoctrine.smhi_assignment.repository.StationObservationRepositoryCustom;
+import com.pixeldoctrine.smhi_assignment.repository.station.StationObservationRepositoryCustom;
 import com.pixeldoctrine.smhi_assignment.service.ObservationIntervalFilter;
 import com.pixeldoctrine.smhi_assignment.util.Sanitizer;
 
 import io.micrometer.common.util.StringUtils;
 
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/api/v1")
 public class ObservationController {
 
     @Value("${app.default.interval}")

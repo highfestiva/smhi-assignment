@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.pixeldoctrine.smhi_assignment.repository.StationObservationRepositoryCustom;
+import com.pixeldoctrine.smhi_assignment.repository.station.StationObservationRepositoryCustom;
 
 import jakarta.xml.bind.JAXBException;
 
