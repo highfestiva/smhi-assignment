@@ -1,5 +1,7 @@
 package com.pixeldoctrine.smhi_assignment.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +41,14 @@ public class StationController {
         var stations = stationsObservations.stations().stream()
                 .map(station -> new StationDTO(station.stationName(), station.stationId()))
                 .toList();
+        if (stations == null) {
+            return new StationsPageDTO(
+                0,
+                pagination.getPage(),
+                pagination.getSize(),
+                List.of()
+            );
+        }
         return new StationsPageDTO(
             stationsObservations.totalStations(),
             pagination.getPage(),

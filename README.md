@@ -149,6 +149,8 @@ boilerplate. It doesn't really do any harm, as what I'm saving is what I want to
 1. Renamed "measurement" "observation," which is more in line with meterology.
 1. Added the REST API endpoint for observations.
 1. Added the observation interval filtering.
+1. Added the API key, had some trouble (IDE probably wasn't compiling right, worked after undoing and redoing all :).
+1. Added an endpoint for just fetching stations.
 
 ## REST API
 
@@ -253,6 +255,9 @@ If we like it's super-easy to add more data to either stations or observations i
 * Refactor, or at least comment, the streams in SmhiDownloadService. Some people love streams, others hate it.
 * Add some autoformatting, a script or part of the build step.
 * Add some linter.
+* Logging unauthorized requests.
+* Adding performance instrumentation, for instance micrometer.io.
+* 
 ...
 
 ## Instructions for manual start+test

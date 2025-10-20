@@ -49,7 +49,11 @@ public class SmhiDownloadService {
     @Value("${smhi.periods}")
     private Set<String> periods;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate;
+
+    public SmhiDownloadService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     public Collection<MetObsSampleData> download() throws JAXBException {
         log.info("Starting SMHI data download from {}", rootUrl);
@@ -60,7 +64,7 @@ public class SmhiDownloadService {
                 .filter(link -> link.getKey().equals(apiVersion))
                 .map(link -> getXmlUrl(link.getLink()))
                 .findFirst()
-                .get(); // if NoSuchElementException, there's no fallback anyway
+                .orElseThrow(() -> new RuntimeException("XML version link missing"));
 
         var version = read(versionUrl, Version.class);
 
@@ -180,7 +184,7 @@ public class SmhiDownloadService {
                 .filter(this::isXmlLink)
                 .map(link -> link.getHref())
                 .findFirst()
-                .get(); // if no XML link, we can't parse anyway
+                .orElseThrow(() -> new RuntimeException("XML link missing"));
     }
 
     private boolean isXmlLink(LinkType link) {

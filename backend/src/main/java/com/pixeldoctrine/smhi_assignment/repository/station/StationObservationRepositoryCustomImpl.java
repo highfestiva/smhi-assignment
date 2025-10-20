@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -18,8 +19,6 @@ import com.mongodb.client.model.UpdateOptions;
 import com.pixeldoctrine.smhi_assignment.dto.PaginationDTO;
 import com.pixeldoctrine.smhi_assignment.dto.StationObservationsDTO;
 import com.pixeldoctrine.smhi_assignment.dto.StationsCountDTO;
-
-import io.micrometer.common.util.StringUtils;
 
 @Repository
 public class StationObservationRepositoryCustomImpl implements StationObservationRepositoryCustom {

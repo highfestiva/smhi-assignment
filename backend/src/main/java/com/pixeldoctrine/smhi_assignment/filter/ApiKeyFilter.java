@@ -1,10 +1,10 @@
 package com.pixeldoctrine.smhi_assignment.filter;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -32,15 +32,16 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         // load the auth bearer key from the database
-        var apiKeyData = Optional.ofNullable(request.getHeader("Authorization"))
-                .filter(h -> h.startsWith("Bearer "))
-                .map(h -> h.substring(7))
-                .map(apiKey -> repo.findByApiKey(apiKey))
-                .orElse(null);
+        String authHeader = request.getHeader("Authorization");
+        ApiKeyDTO apiKeyData = (authHeader != null && authHeader.startsWith("Bearer ")) ?
+                repo.findByApiKey(authHeader.substring(7)) : null;
 
         // check that key and request combination is valid
         if (isValidKeyForRequest(apiKeyData, request)) {
-            Authentication auth = new UsernamePasswordAuthenticationToken(apiKeyData, null, apiKeyData.roles());
+            var roles = apiKeyData.roles().stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
+            Authentication auth = new UsernamePasswordAuthenticationToken(apiKeyData, null, roles);
             SecurityContextHolder.getContext().setAuthentication(auth);
             filterChain.doFilter(request, response); // valid key, go right ahead
         } else {
@@ -54,6 +55,8 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         if (apiKeyData == null || request.getRequestURI() == null) {
             return false;
         }
+        // check paths, if you want it that granular
+        // TODO: regexps are slow, consider something faster if system will be under heavy load
         return apiKeyData.permittedPathRegex().stream()
                 .anyMatch(regex -> request.getRequestURI().matches(regex));
     }

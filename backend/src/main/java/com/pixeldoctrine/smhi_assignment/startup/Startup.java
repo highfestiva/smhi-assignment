@@ -18,7 +18,7 @@ import com.pixeldoctrine.smhi_assignment.service.MetrologyIngestService;
 @Component
 public class Startup {
 
-    private static Logger log = LoggerFactory.getLogger(Startup.class);
+    private static final Logger log = LoggerFactory.getLogger(Startup.class);
 
     private final MetrologyIngestService ingester;
 

@@ -1,5 +1,8 @@
 package com.pixeldoctrine.smhi_assignment.controller;
 
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,8 +14,6 @@ import com.pixeldoctrine.smhi_assignment.dto.StationsObservationsPageDTO;
 import com.pixeldoctrine.smhi_assignment.repository.station.StationObservationRepositoryCustom;
 import com.pixeldoctrine.smhi_assignment.service.ObservationIntervalFilter;
 import com.pixeldoctrine.smhi_assignment.util.Sanitizer;
-
-import io.micrometer.common.util.StringUtils;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -50,9 +51,15 @@ public class ObservationController {
         pageSize = pageSize != null ? pageSize : defaultPageSize;
         var pagination = new PaginationDTO(page, pageSize);
         var stations = repo.findByStationIdAndDuration(stationId, interval, pagination);
-        if (interval != null) {
-            filterer.filterObservationsWithoutInterval(interval, stations.stations());
+        if (stations == null) {
+            return new StationsObservationsPageDTO(
+                0,
+                pagination.getPage(),
+                pagination.getSize(),
+                List.of()
+            );
         }
+        filterer.filterObservationsWithoutInterval(interval, stations.stations());
         return new StationsObservationsPageDTO(
             stations.totalStations(),
             pagination.getPage(),

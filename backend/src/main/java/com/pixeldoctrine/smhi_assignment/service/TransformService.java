@@ -22,10 +22,9 @@ import com.pixeldoctrine.smhi_assignment.dto.StationObservationsDTO;
 @Service
 public class TransformService {
 
-    // private static Logger log = LoggerFactory.getLogger(TransformService.class);
-    private static Map<String, String> PARAM_NAME_TO_TYPE = Map.of("Byvind", "gustWind", "Lufttemperatur", "airTemp");
-    private static Map<String, String> PERIOD_KEY_TO_INTERVAL = Map.of("latest-day", "1d", "latest-hour", "1h");
-    private static Map<String, String> UNIT_TO_UNIT = Map.of("meter per sekund", "m/s", "celsius", "°C");
+    private static final Map<String, String> PARAM_NAME_TO_TYPE = Map.of("Byvind", "gustWind", "Lufttemperatur", "airTemp");
+    private static final Map<String, String> PERIOD_KEY_TO_INTERVAL = Map.of("latest-day", "1d", "latest-hour", "1h");
+    private static final Map<String, String> UNIT_TO_UNIT = Map.of("meter per sekund", "m/s", "celsius", "°C");
 
     public List<StationObservationsDTO> transform(Collection<MetObsSampleData> data) {
 
@@ -57,13 +56,9 @@ public class TransformService {
 
         var recentValue = getMostRecentValue(sampleData.getValue());
         if (recentValue == null) {
-            // log.info(
-            //     "Recent value missing: param {}, station {}, interval {}",
-            //     sampleData.getParameter().getKey(),
-            //     sampleData.getStation().getKey(),
-            //     sampleData.getPeriod().getKey());
             return null;
         }
+        // null types doesn't happen in our simple case, but should be managed in a proper app
         return new ObservationsDTO(
                 PARAM_NAME_TO_TYPE.get(sampleData.getParameter().getName()),
                 PERIOD_KEY_TO_INTERVAL.get(sampleData.getPeriod().getKey()),
