@@ -2,6 +2,9 @@
 
 In my words, this assignment is about checking that I can gather, restructure and present data from some source in a sensible fasion. The code should be clear and extensible C# or Java (I pick the latter), and should adhere to industry standards.
 
+This readme is intentionally disorganized, so to speak. I've tried to reflect my thinking by expanding on it from top to bottom, but had to "refactor"
+small things a couple of times. This will make it harder to read, but hopefully easier to see what I've been up to.
+
 ## What to do
 
 Design a backend solution using the SMHI open API
