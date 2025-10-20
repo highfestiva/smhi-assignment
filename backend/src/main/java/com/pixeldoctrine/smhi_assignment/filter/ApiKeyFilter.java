@@ -3,8 +3,6 @@ package com.pixeldoctrine.smhi_assignment.filter;
 import java.io.IOException;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,8 +19,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class ApiKeyFilter extends OncePerRequestFilter {
-
-    private static Logger log = LoggerFactory.getLogger(ApiKeyFilter.class);
 
     private ApiKeyRepository repo;
 
@@ -46,11 +42,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         if (isValidKeyForRequest(apiKeyData, request)) {
             Authentication auth = new UsernamePasswordAuthenticationToken(apiKeyData, null, apiKeyData.roles());
             SecurityContextHolder.getContext().setAuthentication(auth);
-            log.info("Request path: " + request.getRequestURI());
-            log.info("Authentication: " + SecurityContextHolder.getContext().getAuthentication());
-            System.out.println("Matches? " + apiKeyData.permittedPathRegex().stream().anyMatch(regex -> request.getRequestURI().matches(regex)));
             filterChain.doFilter(request, response); // valid key, go right ahead
-            log.info("DEBUG: Response for " + request.getRequestURI() + " = " + response.getStatus());
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");

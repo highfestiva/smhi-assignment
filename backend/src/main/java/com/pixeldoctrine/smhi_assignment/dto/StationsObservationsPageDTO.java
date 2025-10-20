@@ -2,9 +2,9 @@ package com.pixeldoctrine.smhi_assignment.dto;
 
 import java.util.Collection;
 
-public record StationsPageDTO(
+public record StationsObservationsPageDTO(
     int totalStations,
     int page,
     int pageSize,
-    Collection<StationDTO> stations
+    Collection<StationObservationsDTO> stations
 ) {}
