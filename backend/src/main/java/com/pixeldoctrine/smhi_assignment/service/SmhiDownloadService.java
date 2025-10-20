@@ -37,13 +37,13 @@ public class SmhiDownloadService {
 
     private static final Logger log = LoggerFactory.getLogger(SmhiDownloadService.class);
 
-    @Value("${smhi.download.root_url}")
+    @Value("${smhi.download.root.url}")
     private String rootUrl;
 
-    @Value("${smhi.api_version}")
+    @Value("${smhi.api.version}")
     private String apiVersion;
 
-    @Value("${smhi.api_properties}")
+    @Value("${smhi.api.properties}")
     private Set<String> apiProperties;
 
     @Value("${smhi.periods}")
@@ -123,7 +123,7 @@ public class SmhiDownloadService {
     }
 
     /**
-     * Some measurements are stored in an "interval", others in a "sample." The former has "from" and "to" timestamps, the latter
+     * Some observations are stored in an "interval", others in a "sample." The former has "from" and "to" timestamps, the latter
      * only one specific timestamp. Since the sample data works well for our case, we just move the data over if it's an interval.
      */
     private MetObsSampleData convertToSampleData(MetObsDataType data) {

@@ -52,7 +52,7 @@ ChatGPT told me there's a package called MapStruct, that can do automatic bean m
 
 ## Deliberately skipping
 
-HTTPS/certs. Deploy. CI/CD. Redundancy, resilience, reverse proxy, load balancing. Optimization. Caching.
+HTTPS/certs. Deploy. CI/CD. Redundancy, resilience, reverse proxy, load balancing. Optimization. Caching. Database indices.
 
 ## Data investigation
 
@@ -94,7 +94,7 @@ I'll keep some of the original data, which might be helpful. This is what I'm th
   {
     "station": "Arvidsjaur A",
     "stationId": "159880",
-    "measurements": [
+    "observations": [
       {
         "type": "airTemp",
         "interval": "1h",
@@ -140,14 +140,124 @@ boilerplate. It doesn't really do any harm, as what I'm saving is what I want to
 1. Added a startup component which does the download. That way it's always obvious if everything works, and there's always recent data in the DB.
 1. Added a data pipeline service, "Metrology Ingest", to download, transform and store the data.
 1. Thought some about the data (see "Data investigation" above).
-1. Implemented a bulk save repository to efficiently store the "station measurements."
+1. Implemented a bulk save repository to efficiently store the "station observations."
 1. Implemented a test for the transform service (a single sample).
 1. Implemented part of the transform service. Decided to scrap the MapStruct idea, as it became clunkier than just straightforward java.
 1. Implemented a test for the full transform (a station containing multiple samples).
 1. Implemented the complete transform service.
+1. Got the first download+save going.
+1. Renamed "measurement" "observation," which is more in line with meterology.
+1. Added the REST API endpoint for observations.
+1. Added the observation interval filtering.
+
+## REST API
+
+Time to think about what the REST API should look like. After utilizing the discoverability from SMHI, I've decided against using it, since this is a much more
+condensed data set, and that's also more in line with the assignment ("easy consumption"). I'm thinking something like this:
+
+```
+GET /v1/observations?station=345&interval=1h
+```
+
+For pagination, it might be good to also have `&page=0&size=25`. This allows for asking for a single station, or all - if no stations are set. The interval
+would support 1h and 1d, and also be optional and default to 1h. I'm skipping auxillary `/v1/observations/stations/{station_id}/interval/{}` and so forth.
+
+For meta-data we could do:
+
+```
+GET /v1/stations?page=0&size=10
+```
+
+It's also easy to think of listing time intervals, what types of observations there are, what units they use, and so forth. But for simple consumption, less is
+more, and I'll go with these two for starters.
+
+The output JSON for observations might look something like this:
+
+```json
+{
+  "totalStations": 123,
+  "page": 0,
+  "pageSize": 25,
+  "stations": [
+    {
+      "stationId": "34567",
+      "stationName": "Arvidsjaur",
+      "observations": [
+        {
+          "type": "airTemp",
+          "interval": "1h",
+          "value": "4.3",
+          "unit": "°C",
+          "quality": "G",
+          "updatedAt": "2025-10-18T19:00:00Z",
+          "originalDescription": ["Lufttemperatur", "momentanvärde, 1 gång/tim"]
+        },
+        {
+          "type": "gustWind",
+          "interval": "1h",
+          "value": "7.2",
+          "unit": "m/s",
+          "quality": "G",
+          "updatedAt": "2025-10-18T18:00:00Z",
+          "originalDescription": ["Byvind", "max, 1 gång/tim"]
+        }
+      ]
+    }
+  ]
+}
+```
+
+And the response JSON body for stations might look this way:
+
+```json
+{
+  "totalStations": 123,
+  "stations": [
+    {
+      "stationId": "34567",
+      "stationName": "Arvidsjaur",
+    },
+    {
+      "stationId": "34568",
+      "stationName": "Färgelanda",
+    }
+  ]
+}
+```
+
+If we like it's super-easy to add more data to either stations or observations in the future. Geolocation or altitude, for instance.
+
+## Things to improve
+
+### Functionality
+
+* Distinguish different observations with types. Currently 1d airTemp can mean both bi-daily max and a last 24h average.
+ - airTempMin12h
+ - airTempInstant
+ - ...
+* Nicer pagination, some frontenders want a list of pages to highlight and "buttonify."
+* More meta-data for stations: geolocation, altitude, etc.
+* Get closest stations, given a geocoord (supported in MongoDB).
+* Sorting, stations by name/proximity/altitude/latitude, etc.
+* Endpoint query filter on observation types.
+* Meta-data endpoint for intervals.
+* Discoverability done right, and a root endpoint for it.
+* Issuing API keys.
+* Cleaning up this readme. :)
+...
+
+### Code
+
+* Code vulnerability scanning.
+* CI/CD.
+* Refactor, or at least comment, the streams in SmhiDownloadService. Some people love streams, others hate it.
+* Add some autoformatting, a script or part of the build step.
+* Add some linter.
+...
 
 ## Instructions for manual start+test
 
 1. `docker-compose up --build`
 1. `curl http://127.0.0.1/v1/status`
-1. `curl http://127.0.0.1/v1/something`
+1. `curl 'http://127.0.0.1:8080/v1/observations?interval=1d&page=2&size=3' | python -m json.tool`
+1. `curl http://127.0.0.1/v1/stations | python -m json.tool`

@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 import com.pixeldoctrine.smhi.MetObsDataType;
 import com.pixeldoctrine.smhi.MetObsSampleData;
 import com.pixeldoctrine.smhi.MetObsSampleValueType;
-import com.pixeldoctrine.smhi_assignment.dto.MeasurementDTO;
-import com.pixeldoctrine.smhi_assignment.dto.StationMeasurementsDTO;
+import com.pixeldoctrine.smhi_assignment.dto.ObservationsDTO;
+import com.pixeldoctrine.smhi_assignment.dto.StationObservationsDTO;
 
 public class TransformServiceTest {
 
@@ -35,33 +35,33 @@ public class TransformServiceTest {
             createSample("11111", "Lufttemperatur", "celsius", "latest-day")
         );
 
-        List<StationMeasurementsDTO> stationMeasurements = service.transform(samples);
+        List<StationObservationsDTO> stationObservations = service.transform(samples);
 
-        assertEquals(2, stationMeasurements.size());
-        assertEquals("55667", stationMeasurements.get(0).stationId());
-        assertEquals("11111", stationMeasurements.get(1).stationId());
-        assertEquals(2, stationMeasurements.get(0).measurements().size());
-        assertEquals(1, stationMeasurements.get(1).measurements().size());
-        assertEquals("gustWind", stationMeasurements.get(0).measurements().get(0).type());
-        assertEquals("airTemp", stationMeasurements.get(0).measurements().get(1).type());
-        assertEquals("°C", stationMeasurements.get(1).measurements().get(0).unit());
+        assertEquals(2, stationObservations.size());
+        assertEquals("55667", stationObservations.get(0).stationId());
+        assertEquals("11111", stationObservations.get(1).stationId());
+        assertEquals(2, stationObservations.get(0).observations().size());
+        assertEquals(1, stationObservations.get(1).observations().size());
+        assertEquals("gustWind", stationObservations.get(0).observations().get(0).type());
+        assertEquals("airTemp", stationObservations.get(0).observations().get(1).type());
+        assertEquals("°C", stationObservations.get(1).observations().get(0).unit());
     }
 
     @Test
-    void testTransformToMeasurement() throws DatatypeConfigurationException {
+    void testTransformToObservation() throws DatatypeConfigurationException {
 
         var sample = createSample("12345", "Byvind", "meter per sekund", "latest-hour");
 
-        MeasurementDTO measurement = service.transformToMeasurement(sample);
+        ObservationsDTO observation = service.transformToObservation(sample);
 
-        assertNotNull(measurement);
-        assertEquals("gustWind", measurement.type());
-        assertEquals("1h", measurement.interval());
-        assertEquals("3.0", measurement.value());
-        assertEquals("m/s", measurement.unit());
-        assertEquals("G", measurement.quality());
-        assertEquals(sample.getValue().get(1).getDate().toGregorianCalendar().toZonedDateTime().toInstant(), measurement.updatedAt());
-        assertEquals(List.of("Byvind", "max, 1 gång/tim"), measurement.originalDescription());
+        assertNotNull(observation);
+        assertEquals("gustWind", observation.type());
+        assertEquals("1h", observation.interval());
+        assertEquals("3.0", observation.value());
+        assertEquals("m/s", observation.unit());
+        assertEquals("G", observation.quality());
+        assertEquals(sample.getValue().get(1).getDate().toGregorianCalendar().toZonedDateTime().toInstant(), observation.updatedAt());
+        assertEquals(List.of("Byvind", "max, 1 gång/tim"), observation.originalDescription());
     }
 
     private MetObsSampleData createSample(String stationId, String paramName, String unit, String periodKey) throws DatatypeConfigurationException {

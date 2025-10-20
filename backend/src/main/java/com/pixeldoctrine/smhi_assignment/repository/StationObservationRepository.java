@@ -1,0 +1,8 @@
+package com.pixeldoctrine.smhi_assignment.repository;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import com.pixeldoctrine.smhi_assignment.dto.StationObservationsDTO;
+
+public interface StationObservationRepository extends MongoRepository<StationObservationsDTO, String> {
+}
